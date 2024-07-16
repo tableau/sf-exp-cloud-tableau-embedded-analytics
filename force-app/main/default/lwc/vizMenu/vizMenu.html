@@ -1,0 +1,39 @@
+<template>
+    <div class="container">
+        <p>{label}</p>
+
+        <template if:true={views} for:each={views} for:item="view">
+            
+            <!-- <c-viz-item 
+                key={view.id} 
+                view={view} 
+                onselect={handleselect}>
+            </c-viz-item> -->
+
+            
+            <c-viz-item 
+            key={view.id} 
+            view={view} 
+            onvizitem1={handleVizItem1}>
+            </c-viz-item>
+
+
+            
+
+
+        </template>
+            
+        <template if:false={views}>
+            <div class="slds-var-m-top_medium slds-var-m-bottom_x-large">
+                <h2 class="slds-text-heading_medium slds-var-m-bottom_medium">
+                <!-- this could be misleading as other rest errors could cause the page to not load. -->
+                    Building your content menu...
+                </h2>
+   
+                <div class="slds-var-p-around_medium lgc-bg">
+           
+                </div>
+            </div>
+        </template>
+    </div>
+</template>
