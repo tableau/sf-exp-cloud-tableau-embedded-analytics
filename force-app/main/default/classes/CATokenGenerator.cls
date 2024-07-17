@@ -4,21 +4,74 @@ public with sharing class CATokenGenerator {
 
     }
 
-    // CA for eacloud
-    private static final String ts_ca_iss = '1d92b243-e331-4eb4-a78d-20ab84e00848';
-    private static final String ts_ca_kid = 'e4a54a9b-c20d-4b92-b613-5a5057f9d9cb';
-    private static final String ts_ca_secret ='bvr3qjSaPV+a7YVa5JUpoE/H204OZrt/4YTQ+c1czwk=';
+    private static TableauConnectedApp__mdt ca;
+    private static String ts_ca_iss;
+    private static String ts_ca_kid;
+    private static String ts_ca_secret;
+
+    @AuraEnabled(cacheable=false)
+    public static List<TableauConnectedApp__mdt> getTabEnv() {
+        // DeveloperName is unique id
+        List<TableauConnectedApp__mdt> tabEnv = [SELECT DeveloperName, secret__c, kid__c, clientId__c, SiteName__c, TableauCloud__c  FROM TableauConnectedApp__mdt];
+    
+        // Log the ca at index 0
+        System.debug('tabEnv: ' + tabEnv[0]);
+        // TODO: improve to select using 'SiteName__c' value instead of assuming 1 env and index 0
+        ca = tabEnv[0];
+        ts_ca_iss = ca.clientId__c;
+        ts_ca_kid = ca.kid__c;
+        ts_ca_secret = ca.secret__c;
+        return tabEnv;
+    }
+
+
+    // Get views from custom metadata
+    @AuraEnabled(cacheable=false)
+    public static List<TableauView__mdt> getViews() {
+        // DeveloperName is unique id
+        List<TableauView__mdt> views = [SELECT DeveloperName, contentUrl__c, viewName__c FROM TableauView__mdt];
+    
+        // Log the entire list of views
+        System.debug('Views: ' + views);
+        return views;
+    }
+
+    // Get views from custom metadata
+    @AuraEnabled(cacheable=false)
+    public static List<TableauMetric__mdt> getMetrics() {
+        // DeveloperName is unique id
+        List<TableauMetric__mdt> metrics = [SELECT DeveloperName, metricId__c, metricName__c FROM TableauMetric__mdt];
+    
+        // Log the entire list of views
+        System.debug('Metrics: ' + metrics);
+        return metrics;
+    }
 
     
 
     // Returns user's email & division (Map)
     // @AuraEnabled annotation makes the method accessible via LWC
-    @AuraEnabled(cacheable=true)
+
+    /* 
+    Partner/Community/Experience Cloud users are associated with a Contact, which has a relationship to an Account. 
+    */
+    @AuraEnabled(cacheable=false)
     public static Map<String, String> getUserDetails() {
-        User currentUser = [SELECT Email, Division FROM User WHERE Id = :UserInfo.getUserId()];
+        // Get the user's division, email, and account name
+        User currentUser = [SELECT Email, Division, ContactId FROM User WHERE Id = :UserInfo.getUserId()];
+        String accountName = '';
+
+        if (currentUser.ContactId != null) {
+            // Query the Contact to get the Account Name
+            Contact userContact = [SELECT Account.Name FROM Contact WHERE Id = :currentUser.ContactId];
+            accountName = userContact.Account.Name;
+            System.debug('Account Name: ' + accountName);
+        }
+
         Map<String, String> userDetails = new Map<String, String>{
             'Email' => currentUser.Email,
-            'Division' => currentUser.Division
+            'Division' => currentUser.Division,
+            'Account' => accountName
         };
         return userDetails;
     }
@@ -33,6 +86,33 @@ public with sharing class CATokenGenerator {
         User currentUser = [SELECT Division FROM User WHERE Id = :UserInfo.getUserId()];
         return currentUser.Division;
     }
+
+    // helper to get authenticated user's Account Name field for UAF
+    public static String getCurrentUserAccountName() {
+        User currentUser = [SELECT Email, Division, ContactId FROM User WHERE Id = :UserInfo.getUserId()];
+        String accountName = '';
+        if (currentUser.ContactId != null) {
+            // Query the Contact to get the Account Name
+            Contact userContact = [SELECT Account.Name FROM Contact WHERE Id = :currentUser.ContactId];
+            accountName = userContact.Account.Name;
+        }
+        return accountName;
+    }
+
+
+             
+
+    @AuraEnabled(cacheable=false)
+    public static List<Opportunity> getCurrentUserOpportunities() {
+    // Query to fetch opportunities where the current user is the owner
+    List<Opportunity> opps = [SELECT Id, Name, CloseDate, Amount FROM Opportunity WHERE OwnerId = :UserInfo.getUserId()];
+    return opps;
+    }
+
+
+
+
+    
 
     // helper to get aauthenticated user's username
     public static String getCurrentUserUsername() {
@@ -57,7 +137,8 @@ public with sharing class CATokenGenerator {
             scopes = new List<String>{
                 'tableau:views:embed',
                 'tableau:views:embed_authoring',
-                'tableau:metrics:embed'
+                'tableau:metrics:embed',
+                'tableau:insights:embed'
             };
         } else if (input == 'REST_API') {
             // Add tableau scopes (List)
@@ -74,8 +155,14 @@ public with sharing class CATokenGenerator {
    
     // Returns JWT (String)
     // @AuraEnabled annotation makes the method accessible via LWC 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled(cacheable=false)
     public static String generateJWT(String tokenType) {
+        // get secret, etc. from custom meta data object 
+        getTabEnv();
+
+        // getCurrentUserOpportunities();
+
+
         // Header (Map)
         Map<String, String> header = new Map<String, String>();
         header.put('alg', 'HS256');
@@ -98,8 +185,11 @@ public with sharing class CATokenGenerator {
         claims.put('sub', getCurrentUserUsername());
         List<String> scp = getTableauClaims(tokenType);
         claims.put('scp', scp);
-        String uafValues = getCurrentUserDivision();
+        String uafValues = getCurrentUserAccountName();
         List<String> uafValuesList = convertStringToList(uafValues);
+        claims.put('Account Name', uafValuesList);
+        uafValues = getCurrentUserDivision();
+        uafValuesList = convertStringToList(uafValues);
         claims.put('Region', uafValuesList);
         // Encode Header and Claims
         String encodedHeader = base64UrlEncode(Blob.valueOf(JSON.serialize(header)));

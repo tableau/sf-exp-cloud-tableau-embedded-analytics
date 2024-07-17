@@ -1,15 +1,15 @@
 <template>
     <div class="container">
         <p class="slds-text-heading--small slds-text-color_default">{label}</p>
-        <template if:true={views} for:each={views} for:item="view">
-            <c-viz-item 
-            key={view.id} 
-            view={view} 
-            onvizitem1={handleVizItem1}>
-            </c-viz-item>
+        <template if:true={metrics} for:each={metrics} for:item="metric">
+            <c-pulse-item 
+            key={metric.id} 
+            metric={metric} 
+            onmetricitem1={handleMetricitem1}>
+            </c-pulse-item>
         </template>
             
-        <template if:false={views}>
+        <template if:false={metrics}>
             <div class="slds-var-m-top_medium slds-var-m-bottom_x-large">
                 <h2 class="slds-text-heading_medium slds-var-m-bottom_medium">
                     Building your content menu...

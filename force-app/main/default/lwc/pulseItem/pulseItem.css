@@ -120,7 +120,7 @@ a:hover {
     }
 
 /* Todo: test long titles and if required, use flex to get the text to wrap */
-.view-title {
+.metric-title {
     font-weight: bold;
     text-align: left !important;
     padding: 2px;

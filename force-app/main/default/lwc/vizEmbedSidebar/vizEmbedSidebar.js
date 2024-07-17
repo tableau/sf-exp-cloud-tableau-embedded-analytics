@@ -18,15 +18,30 @@ import {
 } from 'lwc';
 import generateJWT from '@salesforce/apex/CATokenGenerator.generateJWT';
 import getUserDetails from '@salesforce/apex/CATokenGenerator.getUserDetails';
+import getViews from '@salesforce/apex/CATokenGenerator.getViews';
+import getTabEnv from '@salesforce/apex/CATokenGenerator.getTabEnv';
+import getCurrentUserOpportunities from '@salesforce/apex/CATokenGenerator.getCurrentUserOpportunities';
+import { NavigationMixin } from 'lightning/navigation';
+// import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
-export default class VizEmbedSidebar extends LightningElement {
+export default class VizEmbedSidebar extends NavigationMixin(LightningElement)  {
+    @track showCustomToast = false;
+    @track message = '  Returns have increased above the expected range for the current time period.  ';
+
+    handleCloseToast() {
+        console.log('close event received in vizEmbedSidebar component!');
+        this.showCustomToast = false; // Hide the toast when the close event is triggered
+    }
+
+
 
     // Sidebar stuff
     @track isOpen = false;
     @track isTextVisible = false;
 
     get svgColor() {
-        return '#35A757';
+        /* menu text color for SVG */
+        return '#C23335';
     }
 
     get divClass1() {
@@ -46,8 +61,11 @@ export default class VizEmbedSidebar extends LightningElement {
     handleVizItem2(event) {
         console.log('vizitem2 event fired!');
         this.contentUrl = event.detail;
+        this.initViz(true);
+
+
         // This is cool. Instead of calling initViz, we just update the src property on the Tableau web component which is more performant. Need to implement this in CDAPP
-        this.tableauContainer.src = this.vizUrl;
+        // this.tableauContainer.src = this.vizUrl;
     }
 
     @track jwt;
@@ -58,60 +76,52 @@ export default class VizEmbedSidebar extends LightningElement {
     targetSheet;
     tokenType = 'SSO';
     contentUrl;
-
-
-    
+    views;
     viewUrl;
-    // will need to make these configurable
-    targetViz = 'https://us-west-2b.online.tableau.com/t/eacloud/views/UAFSuperstore/Overview';
-    // 'UAFSuperstore/sheets/Overview'
-    server = 'https://us-west-2b.online.tableau.com';
+    server;
+    site;
+    workbook;
+    view;
     path = '/t/';
-    site = 'eacloud';
-    workbook = 'UAFSuperstore';
-    view = 'Overview';
     params = '?:embed=y';
-
-
-
-    // handleClickedItemIdChange() {
-    //     console.log("handleClickedItemIdChange in vizEmbed fired!");
-    //     // This function will be called whenever clickedItemId changes
-    //     // You can access the new value with this.clickedItemId
-    // }
-
-    async handleClick() {
-        console.log('Custom click event received in vizEmbed');
-        
-        // Clean up later; this is stuff that didn't work and had to work with Dev for workaround, which is parasedArray
-        // await this.viz.exportImageAsync();
-        // await this.viz.applyFilterAsync("State", ["Florida", "Georgia"], FilterUpdateType.Add);
-        // DOES NOT WORK; DOESN'T ALLOW YOU TO CLONE
-        // const filterArray = ["East"];
-        // const clonedArray = [...filterArray];
-        const filterArray = ["East"];
-        const stringified = JSON.stringify(filterArray);
-        const parsedArray = JSON.parse(stringified);
-        try {
-            await this.targetSheet.applyFilterAsync("Region", parsedArray, "replace");
-            console.log('Filter applied successfully');
-        } catch (error) {
-            console.error('Error applying filter: ', error);
-        }
-    }
+    opportunities;
     
     connectedCallback() {
-        // Listen for the 'selectedview' event
-        // this.addEventListener('selectedview', this.handleSelectedView);
 
-        // First Apex call
-        getUserDetails()
+        this.template.addEventListener('navigatetopulse', () => {
+            console.log('navigatetopulse event received in vizEmbedSidebar component!');
+            this[NavigationMixin.Navigate]({
+                type: 'standard__component',
+                attributes: {
+                    componentName: 'c__pulseEmbedSidebar'
+                }
+            });
+        });
+
+        getCurrentUserOpportunities()
+        .then(result => {
+            console.log('opportunities: ' + JSON.stringify(result));
+            this.opportunities = result;
+            console.log('opportunities: ' + JSON.stringify(this.opportunities));
+            return getTabEnv();
+        })
+      
+            .then(result => {
+                // Handle the result from the second call
+                console.log('tabEnv: ' + JSON.stringify(result));
+                this.server = result[0].TableauCloud__c;
+                this.site = result[0].SiteName__c;
+                
+                
+                // Third Apex call getViews
+                return getUserDetails();
+            })
             .then(result => {
                 // Handle the result from the first call
                 this.userDetails = result;
                 console.log('userDetails: ' + JSON.stringify(this.userDetails));
     
-                // Second Apex call
+                // Second Apex call generateJWT
                 return generateJWT({ tokenType: this.tokenType });
             })
             .then(result => {
@@ -119,27 +129,57 @@ export default class VizEmbedSidebar extends LightningElement {
                 this.jwt = result;
                 console.log('JWT: ' + this.jwt);
                 console.log('Link to decode JWT: ' + 'https://jwt.io/#debugger-io?token=' + this.jwt);
-                this.initViz(); // Init viz after jwt is fetched
+                
+                // Third Apex call getViews
+                return getViews();
+            })
+            .then(result => {
+                // Handle the result from the thrid call
+                // Normalize the view properties to those found in REST API response (name, contentUrl, etc.)
+                this.views = result.map(item => {
+                    return {
+                        ...item,
+                        contentUrl: item.contentUrl__c,
+                        name: item.viewName__c,
+                        id: item.Id,
+                        contentUrl__c: undefined,
+                        viewName__c: undefined,
+                        Id: undefined
+                    };
+                });
+                console.log('Views:', JSON.stringify(this.views));
+                // load view at index 0 on first page load
+                // TODO: improve to index off of name instead of index int
+                this.contentUrl = this.views[0].contentUrl;
+                this.initViz(false); // Init viz after all the apex calls
                 this.addEventListener('customclick', this.handleCustomClick.bind(this));
             })
             .catch(error => {
                 // Handle error
                 console.log("error: " + JSON.stringify(error));
             });
+ 
     }
 
- 
+    // showToastNotification(title, message, variant) {
+    //     const event = new ShowToastEvent({
+    //         title: title,
+    //         message: message,
+    //         variant: variant,
+    //         mode: 'dismissable'
+    //     });
+    //     this.dispatchEvent(event);
+    // }
 
     get tableauContainer() {
+        const container = this.template.querySelector('.tableau-target-div');
+        console.log('tableauContainer: ' + JSON.stringify(container));
         return this.template.querySelector('.tableau-target-div');
     }
 
     get vizUrl() {
         
         if (this.contentUrl) {
-            // this.contentUrl = window.localStorage.getItem('contentUrl');
-            // console.log('TABLEAU: URL in local storage => ' + this.contentUrl);
-          
             let parts = this.contentUrl.split('/');
             this.view = parts[parts.length - 1];
             this.workbook = parts[0];
@@ -153,12 +193,25 @@ export default class VizEmbedSidebar extends LightningElement {
         return this.viewUrl;
     }
 
-
-
     // In the initViz1() method, we create the viz object from the HTML element (container), and then use the viz object to programatically configure the embedded viz.
     // This approach requires the <tableau-viz> web component to be included in the HTML
-    initViz() {
+    async initViz(fromMenuClick) {
         const container = this.tableauContainer;
+
+        if (fromMenuClick) {
+            console.log('Generating JWT after menu click');
+            generateJWT({ tokenType: this.tokenType })
+                .then(result => {
+                // Handle the result
+                this.jwt = result;
+                console.log('JWT: ' + this.jwt);
+                console.log('Link to decode JWT: ' + 'https://jwt.io/#debugger-io?token=' + this.jwt);
+            })
+            .catch(error => {
+                // Handle error
+                console.log("error: " + JSON.stringify(error));
+            });
+        }
 
         if (container) {
 
@@ -167,7 +220,9 @@ export default class VizEmbedSidebar extends LightningElement {
             container.width = '100%';
             container.token = this.jwt;
             container.src = this.vizUrl;
-            container.debug = true;
+            // container.debug = true;
+            container.toolbar = 'top';
+            // container.toolbar = 'hidden';
 
             console.log('container.token: ' + container.token);
             console.log('container.src: ' + container.src);
@@ -176,6 +231,7 @@ export default class VizEmbedSidebar extends LightningElement {
             
             // Listen for the 'firstinteractive' event, which is fired when the viz has finished loading
             tableauVizElement.addEventListener('firstinteractive', (onFirstInteractiveEvent) => {
+                this.showCustomToast = true;
                 console.log('viz loaded!');
                 console.log('target: ' + onFirstInteractiveEvent.target);
                 this.viz = onFirstInteractiveEvent.target;
@@ -189,13 +245,5 @@ export default class VizEmbedSidebar extends LightningElement {
 
         }
     }
-
-
-
-
-
-
-    
-    
 
 }

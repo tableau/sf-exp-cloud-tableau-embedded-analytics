@@ -9,7 +9,5 @@
         <target>lightning__HomePage</target>
         <target>lightningCommunity__Page</target>
         <target>lightningCommunity__Default</target>
-        <!-- for navigation mixin -->
-        <target>lightning__UrlAddressable</target>
     </targets>
 </LightningComponentBundle>

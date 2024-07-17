@@ -1,0 +1,23 @@
+<template>
+    <div class={toastClasses} role="alert">
+        <span class="slds-assistive-text">{variant}</span>
+        <!-- <span class="slds-icon_container slds-icon-utility-info slds-m-right_small" title={variant}>
+            <lightning-icon icon-name="utility:graph" size="small" onclick={navigateToPulseEmbedSidebar}></lightning-icon>
+        </span> -->
+
+        <button class="slds-button slds-button_icon slds-button_icon-small slds-toast__close" title="Close" onclick={handleNavigate}>
+            <lightning-icon icon-name="utility:graph" size="small"></lightning-icon>
+            <span class="slds-assistive-text">Close</span>
+        </button>
+
+
+
+        <!-- <button onclick={navigateToPulseEmbedSidebar}>Go to Pulse Embed Sidebar</button> -->
+        <h2>{title}</h2>
+        <p class="message-content">{message}</p>
+        <button class="slds-button slds-button_icon slds-button_icon-small slds-toast__close" title="Close" onclick={handleClose}>
+            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+            <span class="slds-assistive-text">Close</span>
+        </button>
+    </div>
+</template>

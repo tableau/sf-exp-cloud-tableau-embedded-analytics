@@ -9,7 +9,6 @@ export default class VizItem extends LightningElement {
     handleVizItem(event) {
         console.log('click event fired!');
         console.log("viewId: " + this.view.id);
-        // event.preventDefault();
         const e = new CustomEvent('vizitem1', {
             detail: this.view.id,
             bubbles: true, // Enable bubbling
