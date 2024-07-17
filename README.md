@@ -14,14 +14,15 @@ For more information on JSON Web Tokens (JWT), visit [jwt.io](https://jwt.io/).
 
 ## Additional Resources
 
- - Github repository
- - Configure a Component for Experience Builder
- - Tableau Insights Delivered Directly to Salesforce
- - Tableau Embedding API v3
- - Exploring the E-Bikes Sample App
- - Tableau Postman Collection for the Tableau REST API
- - Manage Trusted URLs
- - Unlock the Power of Personalized Analytics with User Attribute Functions
+ - [Integrate AI Powered Insights into Your Customer Journeys (youtube video)](https://www.youtube.com/watch?v=iAPwsXN8afY)
+ - [Configure a Component for Experience Builder](https://developer.salesforce.com/docs/platform/lwc/guide/use-config-for-community-builder.html)
+ - [Tableau Insights Delivered Directly to Salesforce](https://www.tableau.com/blog/tableau-insights-delivered-directly-salesforce)
+ - [Tableau Embedding API v3](https://help.tableau.com/current/api/embedding_api/en-us/index.html)
+ - [Exploring the E-Bikes Sample App (youtube video)](https://www.youtube.com/watch?v=8iE-1q4N0P8&t=63s)
+ - [Tableau Postman Collection for the Tableau REST API](https://www.postman.com/salesforce-developers/workspace/salesforce-developers/collection/12721794-7d783742-165f-4d10-8c4c-5719fb60fba2)
+ - [Manage Trusted URLs](https://help.salesforce.com/s/articleView?id=sf.security_trusted_urls_manage.htm&type=5)
+ - [Unlock the Power of Personalized Analytics with User Attribute Functions](https://www.tableau.com/blog/unlock-power-personalized-analytics-user-attribute-functions)
+
 
 # Salesforce DX Project Basics
 
