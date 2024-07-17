@@ -1,3 +1,16 @@
+# Solution Overview and Workflow
+
+When the component page loads in a browser or when a user clicks on a Tableau content link in the sidebar menu the InitViz() function is triggered. This function performs the following steps:
+
+
+1. It calls the Apex method generateJWT() to create a JSON Web Token (JWT).
+2. It constructs the URL for the Tableau content.
+3. It passes both the JWT and the URL to the Tableau Embedding v3 API.
+
+The Tableau Embedding v3 API then initiates the AuthN/Z flow with Tableau, automatically passing the JWT to Tableau for secure user authentication using Single Sign-On (SSO). This authentication is facilitated by Tableau Connected Apps.
+
+Once authenticated, the Tableau Viz or Pulse Metric is loaded directly within the component's page. The authentication process leverages Tableau Connected Apps and JWT to enforce data security throughout the authenticated user's session. The user's Account Name (in this case, "Wheelworks") is included in the JWT as the "Account" claim, which serves as a data authorization or entitlement to provide the user secure access to only records associated with the Wheelworks account.
+
 # Salesforce DX Project: Next Steps
 
 Now that you’ve created a Salesforce DX project, what’s next? Here are some documentation resources to get you started.
