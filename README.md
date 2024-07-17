@@ -10,7 +10,18 @@ The Tableau Embedding v3 API then initiates the AuthN/Z flow with Tableau, autom
 
 Once authenticated, the Tableau Viz or Pulse Metric is loaded directly within the component's page. The authentication process leverages Tableau Connected Apps and JWT to enforce data security throughout the authenticated user's session. The user's Account Name (in this case, "Wheelworks") is included in the JWT as the "Account" claim, which serves as a data authorization or entitlement to provide the user secure access to only records associated with the Wheelworks account.
 
-For more information on JSON Web Tokens (JWT), visit https://jwt.io (https://jwt.io/).
+For more information on JSON Web Tokens (JWT), visit [jwt.io](https://jwt.io/).
+
+## Additional Resources
+
+ - Github repository
+ - Configure a Component for Experience Builder
+ - Tableau Insights Delivered Directly to Salesforce
+ - Tableau Embedding API v3
+ - Exploring the E-Bikes Sample App
+ - Tableau Postman Collection for the Tableau REST API
+ - Manage Trusted URLs
+ - Unlock the Power of Personalized Analytics with User Attribute Functions
 
 # Salesforce DX Project Basics
 
