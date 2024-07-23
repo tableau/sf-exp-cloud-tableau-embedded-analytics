@@ -1,4 +1,8 @@
-# Solution Overview and Workflow
+# Solution Overview
+
+This solution combines the power of the Salesforce Platform with [Tableau Connected Apps (CA)](https://help.tableau.com/current/online/en-us/connected_apps.htm) and [User Attribute Functions (UAF)](https://help.tableau.com/current/pro/desktop/en-us/functions_functions_user.htm#for-embedding-workflows-in-tableau-cloud-only) to enforce data security in a modern, scalable, and developer-friendly manner. Specifically, developers can dynamically query Salesforce Objects using Salesforce Object Query Language (SOQL), at runtime, to programmatically fetch data authorizations and pass those to Tableau using [Connected Apps Direct trust](https://help.tableau.com/current/online/en-us/connected_apps_direct.htm) and JSON Web Tokens (JWT) to enforce data security for Tableau Dashboards.
+
+# Solution Workflow
 
 When the component page loads in a browser or when a user clicks on a Tableau content link in the sidebar menu the InitViz() function is triggered. This function performs the following steps:
 
