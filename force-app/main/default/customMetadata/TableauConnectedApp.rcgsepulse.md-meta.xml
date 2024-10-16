@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>rcgsepulse</label>
+    <protected>false</protected>
+    <values>
+        <field>SiteName__c</field>
+        <value xsi:type="xsd:string">rcgsepulse</value>
+    </values>
+    <values>
+        <field>TableauCloud__c</field>
+        <value xsi:type="xsd:string">https://{change_me}.online.tableau.com</value>
+    </values>
+    <values>
+        <field>clientId__c</field>
+        <value xsi:type="xsd:string">{change_me}</value>
+    </values>
+    <values>
+        <field>kid__c</field>
+        <value xsi:type="xsd:string">{change_me}</value>
+    </values>
+    <values>
+        <field>secret__c</field>
+        <value xsi:type="xsd:string">{change_me}</value>
+    </values>
+</CustomMetadata>
