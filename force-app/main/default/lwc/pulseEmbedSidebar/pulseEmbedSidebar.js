@@ -19,8 +19,9 @@ import {
 import generateJWT from '@salesforce/apex/CATokenGenerator.generateJWT';
 import getUserDetails from '@salesforce/apex/CATokenGenerator.getUserDetails';
 // import getViews from '@salesforce/apex/CATokenGenerator.getViews';
-import getTabEnv from '@salesforce/apex/CATokenGenerator.getTabEnv';
+import getTableauEnvConfig from '@salesforce/apex/CATokenGenerator.getTableauEnvConfig';
 import getMetrics from '@salesforce/apex/CATokenGenerator.getMetrics';
+import { loadScript } from 'lightning/platformResourceLoader';
 
 export default class PulseEmbedSidebar extends LightningElement {
 
@@ -77,10 +78,32 @@ export default class PulseEmbedSidebar extends LightningElement {
     workbook = 'UAFSuperstore';
     view = 'Overview';
     params = '?:embed=y';
+    baseUrl;
+    SCRIPT_PATH;
+    SCRIPT_PATH_ALT;
     
     connectedCallback() {
         // First Apex call getUserDetails
-        getTabEnv()
+        // Get the current domain dynamically
+        this.baseUrl = window.location.origin;
+        console.log('Current Domain: ' + this.baseUrl);
+
+        this.SCRIPT_PATH = '/js/tableau/tableau.embedding.3.9.0-pre.21.min.js';
+        this.SCRIPT_PATH_ALT = '/sfsites/c' + this.SCRIPT_PATH;
+
+        // Load the Tableau Embed v3 API script
+        loadScript(this, this.baseUrl + this.SCRIPT_PATH)
+            .then(() => {
+                console.log('Tableau Embed v3 API script loaded successfully.');
+            })
+            .catch(() => {
+                console.log('Tableau Embed v3 API script failed to load using ' + this.SCRIPT_PATH + ' - now trying ' + this.SCRIPT_PATH_ALT);
+                return loadScript(this, this.baseUrl + this.SCRIPT_PATH_ALT);
+            })
+            .then(() => {
+                // This will execute after either the initial loadScript (success or fail)
+                return getTableauEnvConfig();
+            })
             .then(result => {
                 // Handle the result from the second call
                 console.log('tabEnv: ' + JSON.stringify(result));
