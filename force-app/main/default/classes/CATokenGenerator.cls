@@ -10,7 +10,7 @@ public with sharing class CATokenGenerator {
     private static String ts_ca_secret;
 
     @AuraEnabled(cacheable=false)
-    public static List<TableauConnectedApp__mdt> getTabEnv() {
+    public static List<TableauConnectedApp__mdt> getTableauEnvConfig() {
         // DeveloperName is unique id
         List<TableauConnectedApp__mdt> tabEnv = [SELECT DeveloperName, secret__c, kid__c, clientId__c, SiteName__c, TableauCloud__c  FROM TableauConnectedApp__mdt];
     
@@ -157,8 +157,8 @@ public with sharing class CATokenGenerator {
     // @AuraEnabled annotation makes the method accessible via LWC 
     @AuraEnabled(cacheable=false)
     public static String generateJWT(String tokenType) {
-        // get secret, etc. from custom meta data object 
-        getTabEnv();
+        // get secret, secret_id, client_id from custom meta data object 
+        getTableauEnvConfig();
 
         // getCurrentUserOpportunities();
 
@@ -188,9 +188,9 @@ public with sharing class CATokenGenerator {
         String uafValues = getCurrentUserAccountName();
         List<String> uafValuesList = convertStringToList(uafValues);
         claims.put('Account Name', uafValuesList);
-        uafValues = getCurrentUserDivision();
-        uafValuesList = convertStringToList(uafValues);
-        claims.put('Region', uafValuesList);
+        // uafValues = getCurrentUserDivision();
+        // uafValuesList = convertStringToList(uafValues);
+        // claims.put('Region', uafValuesList);
         // Encode Header and Claims
         String encodedHeader = base64UrlEncode(Blob.valueOf(JSON.serialize(header)));
         String encodedClaims = base64UrlEncode(Blob.valueOf(JSON.serialize(claims)));
