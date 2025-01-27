@@ -113,7 +113,7 @@ export default class VizEmbedSidebar extends NavigationMixin(LightningElement)  
         this.baseUrl = window.location.origin;
         console.log('Current Domain: ' + this.baseUrl);
 
-        this.SCRIPT_PATH = '/js/tableau/tableau.embedding.3.9.0-pre.21.min.js';
+        this.SCRIPT_PATH = '/js/tableau/tableau.embedding.latest.min.js';
         this.SCRIPT_PATH_ALT = '/sfsites/c' + this.SCRIPT_PATH;
 
         // Load the Tableau Embed v3 API script
